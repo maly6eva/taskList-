@@ -20,7 +20,17 @@ function App() {
     function addTasks(task) {
         setTasks([...tasks, {...task, completed: false, id: Date.now()}])
     }
+
+  function deleteTask(id) {
+      setTasks(tasks.filter(task => task.id !== id))
+  }
+
+  function  completeTask(id) {
+        setTasks(tasks.map(task => task.id === id ? {...task,  completed: true } : task))
+  }
     console.log(tasks)
+
+
 
     const activeTasks = tasks.filter(task => !task.completed)
     const completedTasks = tasks.filter(task => task.completed)
@@ -47,7 +57,7 @@ function App() {
             </div>
             {
                 openSection.tasks &&
-                <TaskList activeTasks={activeTasks}/>
+                <TaskList deleteTask={deleteTask} activeTasks={activeTasks} completeTask={completeTask}/>
             }
 
         </div>
@@ -58,7 +68,7 @@ function App() {
             </button>
             {
                 openSection.completed &&
-                <CompletedTaskList/>
+                <CompletedTaskList deleteTask={deleteTask} completedTasks={completedTasks}/>
             }
 
         </div>
@@ -107,24 +117,29 @@ function TaskForm({addTasks}) {
     </form>
 }
 
-function TaskList({activeTasks}) {
+function TaskList({activeTasks, deleteTask, completeTask}) {
     console.log(activeTasks)
     return <ul className='task-list'>
         {activeTasks.map(task =>(
-            <TaskItem task={task} ket={task.id}/>
+            <TaskItem task={task} key={task.id} deleteTask={deleteTask} completeTask={completeTask}/>
         ) )}
 
     </ul>
 }
 
-function CompletedTaskList() {
+function CompletedTaskList({completedTasks, deleteTask}) {
     return <ul className='completed-task-list'>
-        {/*<TaskItem/>*/}
+        {completedTasks.map(task => (
+            <TaskItem key={task.id} task={task} deleteTask={deleteTask}/>
+        ))}
+
     </ul>
 }
 
-function TaskItem({task}) {
-    const {title, priority, deadline, id} = task
+function TaskItem({task, deleteTask, completeTask}) {
+    const {title, priority, deadline, id, completed} = task
+
+
     return (
         <li className={`task-item ${ priority.toLowerCase()}`}>
             <div className='task-info'>
@@ -134,8 +149,11 @@ function TaskItem({task}) {
                 <div className='task-deadline'>Due: {new Date(deadline).toLocaleString()}</div>
             </div>
             <div className='task-buttons'>
-                <button className='complete-button'>Complete</button>
-                <button className='delete-button'>Delete</button>
+                {  !completed && (
+                    <button className='complete-button' onClick={() => completeTask(id)}>Complete</button>
+                )}
+
+                <button className='delete-button' onClick={() => deleteTask(id)}>Delete</button>
             </div>
         </li>
     )
